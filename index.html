@@ -294,9 +294,19 @@ tw-passage hr {
   margin: 2rem 0;
 }</style><script role="script" id="twine-user-script" type="text/twine-javascript">/* =============================================
    ACCESSIBILITY JAVASCRIPT FOR TWINE HARLOWE
+   Robust multi-browser version
    ============================================= */
 
-window.addEventListener('load', function () {
+function initA11yToolbar() {
+
+  /* Prevent duplicate toolbars if this runs twice */
+  if (document.getElementById('a11y-toolbar')) return;
+
+  /* If body is not ready yet, retry in 100ms */
+  if (!document.body) {
+    setTimeout(initA11yToolbar, 100);
+    return;
+  }
 
   /* --- 1. Skip Navigation Link --- */
   var skipLink = document.createElement('a');
@@ -345,14 +355,18 @@ window.addEventListener('load', function () {
   passageAnchor.id = 'passage-content';
   passageAnchor.setAttribute('tabindex', '-1');
   var story = document.querySelector('tw-story');
-  if (story) story.insertBefore(passageAnchor, story.firstChild);
+  if (story) {
+    story.insertBefore(passageAnchor, story.firstChild);
+  } else {
+    document.body.appendChild(passageAnchor);
+  }
 
   /* --- 5. Watch for Passage Changes --- */
   var observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
       if (mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach(function (node) {
-          if (node.nodeName === 'TW-PASSAGE' || 
+          if (node.nodeName === 'TW-PASSAGE' ||
               (node.querySelector && node.querySelector('tw-passage'))) {
 
             setTimeout(function () {
@@ -419,7 +433,8 @@ window.addEventListener('load', function () {
   var motionReduced = false;
 
   /* Check OS preference on load */
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     motionReduced = true;
     document.body.setAttribute('data-motion', 'reduced');
     var motionBtn = document.getElementById('btn-motion');
@@ -436,7 +451,32 @@ window.addEventListener('load', function () {
     this.setAttribute('aria-pressed', motionReduced.toString());
   });
 
-});</script><tw-passagedata pid="1" name="Waiting Room" tags="" position="275,1025" size="100,100">The chairs in the imaging center waiting room are upholstered in a blue floral pattern that stopped being fashionable sometime around 1997. You&#39;ve claimed the one nearest the outlet, phone plugged in, Canvas app open.
+}
+
+/* =============================================
+   MULTIPLE ENTRY POINTS
+   Ensures initialization regardless of when
+   the browser fires its ready events
+   ============================================= */
+
+/* Entry point 1: If DOM is already ready */
+if (document.readyState === 'complete' ||
+    document.readyState === 'interactive') {
+  setTimeout(initA11yToolbar, 50);
+}
+
+/* Entry point 2: DOMContentLoaded */
+document.addEventListener('DOMContentLoaded', function () {
+  setTimeout(initA11yToolbar, 50);
+});
+
+/* Entry point 3: Full load event as fallback */
+window.addEventListener('load', function () {
+  setTimeout(initA11yToolbar, 100);
+});
+
+/* Entry point 4: Final safety net after 1 second */
+setTimeout(initA11yToolbar, 1000);</script><tw-passagedata pid="1" name="Waiting Room" tags="" position="275,1025" size="100,100">The chairs in the imaging center waiting room are upholstered in a blue floral pattern that stopped being fashionable sometime around 1997. You&#39;ve claimed the one nearest the outlet, phone plugged in, Canvas app open.
 
 Your mom is somewhere behind the frosted glass doors. You didn&#39;t ask exactly what the scans were looking for. She didn&#39;t volunteer. The appointment has been on the calendar for three weeks. 
 
